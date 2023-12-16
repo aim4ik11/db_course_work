@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RoleHasPermission {
+  appointed     DateTime   @updatedAt @default(now())
+  role_id       Int
+  permission_id Int
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  @@id([role_id, permission_id])
+}
+
+model Permission {
+  id      Int                     @id @default(autoincrement())
+  name    String
+  roles   RoleHasPermission[]
+}
+
+model AnswerVariant {
+  id            Int       @id @default(autoincrement())
+  text          String
+  question      Question  @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id   Int
+  answers        Answer[]
+}
+
+model Question {
+  id                Int               @id @default(autoincrement())
+  text              String
+  survey_id         Int
+  survey            Survey            @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  answer_variants   AnswerVariant[]
+}
+
+model Role {
+  id            Int                     @id @default(autoincrement())
+  name          String
+  permissions   RoleHasPermission[]
+  users         User[]
+}
+
+enum SurveyState {
+  OPENED
+  CLOSED
+  PAUSED
+}
+
+model Survey {
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String?
+  created        DateTime         @default(now())
+  user_id        Int
+  state          SurveyState      @default(OPENED)
+  questions      Question[]
+  passed_survey  PassedSurvey[]
+  user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model PassedSurvey {
+  id         Int          @id @default(autoincrement())
+  survey     Survey       @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  survey_id  Int
+  passed     DateTime     @default(now())
+  user       User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id    Int
+  answers    Answer[]
+}
+
+model Answer {
+  id                  Int               @id @default(autoincrement())
+  variant             AnswerVariant     @relation(fields: [variant_id], references: [id], onDelete: Cascade)
+  variant_id          Int
+  passed_survey_id    Int
+  survey              PassedSurvey      @relation(fields: [passed_survey_id], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  firstname       String
+  lastname        String
+  nickname        String
+  email           String
+  password        String
+  role_id         Int
+  passed_surveys  PassedSurvey[]
+  surveys         Survey[]
+  role            Role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
+}
+
+
