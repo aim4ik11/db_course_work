@@ -10,7 +10,7 @@ footer: "ECL 2.0 Licensed | Copyright © [2023] [Rusak Yaroslav]"
 **Виконав:** 
 
 *студент 2-го курсу, групи ІМ-21*
-<span padding-right:5em></span> **Русак Ярослав** <a href="https://t.me/aim4i" target="_blank"> Telegram </a>
+<span padding-right:5em></span> **Ярослав РУСАК** <a href="https://t.me/aim4i" target="_blank"> Telegram </a>
 
 **Керівник**
 
