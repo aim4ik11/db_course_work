@@ -94,11 +94,11 @@ CREATE TABLE "User"
 
 ```
 
-## RESTfull сервіс для управління даними
+## RESTful сервіс для управління даними
 
 Схема бази даних (ORM Prisma)
 
-```prisma
+```
 generator client {
   provider = "prisma-client-js"
 }
@@ -281,7 +281,8 @@ export class SurveyController {
   constructor(
     private readonly surveyService: SurveyService,
     private readonly questionMapper: QuestionMapper,
-  ) {}
+  ) {
+  }
 
   @Access('survey.$surveyId.add.question')
   @Post('/:surveyId/question')
@@ -291,6 +292,7 @@ export class SurveyController {
   ) {
     return this.surveyService.addQuestion(body, surveyId);
   }
+
   @Access('survey.$surveyId.delete.question.$questionId')
   @Delete('/:surveyId/question/:questionId')
   deleteQuestion(
@@ -299,6 +301,7 @@ export class SurveyController {
   ) {
     return this.surveyService.deleteQuestion(questionId);
   }
+
   @Access('survey.$surveyId.update.question.$questionId')
   @Patch('/:surveyId/question/:questionId')
   updateQuestion(
@@ -308,12 +311,14 @@ export class SurveyController {
   ) {
     return this.surveyService.updateQuestion(surveyId, questionId, body);
   }
+
   @Access('survey.surveyId.get.questions')
   @Get('/:surveyId/questions')
   async getQuestions(@Param('surveyId', SurveyByIdPipe) surveyId: number) {
     const survey = await this.surveyService.getSurveyWithQuestions(surveyId);
     return this.surveyMapper.getSurveyWithQuestions(survey);
   }
+
   @Access('survey.surveyId.get.questions.$questionId')
   @Get('/:surveyId/questions/:questionId')
   getQuestion(
@@ -322,6 +327,7 @@ export class SurveyController {
   ) {
     return this.surveyService.getQuestion(surveyId, questionId);
   }
+
   @Access('survey.$surveyId.get.answers.$questionId')
   @Get('/:surveyId/answers/:questionId')
   async getQuestionWithAnswers(
@@ -334,6 +340,7 @@ export class SurveyController {
     );
     return this.questionMapper.getQuestionWithAnswers(question);
   }
+}
 ```
 
 ## Сервіс для роботи з питаннями
