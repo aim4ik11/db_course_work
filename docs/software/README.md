@@ -97,106 +97,109 @@ CREATE TABLE "User"
 ## RESTfull сервіс для управління даними
 
 Схема бази даних (ORM Prisma)
+
 ```prisma
 generator client {
-provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-provider = "postgresql"
-url = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model RoleHasPermission {
-appointed DateTime @updatedAt @default(now())
-role_id Int
-permission_id Int
-permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
-role Role @relation(fields: [role_id], references: [id], onDelete: Cascade)
-@@id([role_id, permission_id])
+  appointed     DateTime   @updatedAt @default(now())
+  role_id       Int        
+  permission_id Int        
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@id([role_id, permission_id])
 }
 
 model Permission {
-id Int @id @default(autoincrement())
-name String
-roles RoleHasPermission[]
+  id    Int                 @id @default(autoincrement())
+  name  String              
+  roles RoleHasPermission[] 
 }
 
 model AnswerVariant {
-id Int @id @default(autoincrement())
-text String
-question Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
-question_id Int
-answers Answer[]
+  id          Int      @id @default(autoincrement())
+  text        String   
+  question    Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  question_id Int      
+  answers     Answer[] 
 }
 
 model Question {
-id Int @id @default(autoincrement())
-text String
-survey_id Int
-survey Survey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
-answer_variants AnswerVariant[]
+  id              Int             @id @default(autoincrement())
+  text            String          
+  survey_id       Int             
+  survey          Survey          @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  answer_variants AnswerVariant[] 
 }
 
 model Role {
-id Int @id @default(autoincrement())
-name String
-permissions RoleHasPermission[]
-users User[]
+  id          Int                 @id @default(autoincrement())
+  name        String              
+  permissions RoleHasPermission[] 
+  users       User[]              
 }
 
 enum SurveyState {
-OPENED
-CLOSED
-PAUSED
+  OPENED
+  CLOSED
+  PAUSED
 }
 
 model Survey {
-id Int @id @default(autoincrement())
-title String
-description String?
-created DateTime @default(now())
-user_id Int
-state SurveyState @default(OPENED)
-questions Question[]
-passed_survey PassedSurvey[]
-user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id            Int            @id @default(autoincrement())
+  title         String         
+  description   String?        
+  created       DateTime       @default(now())
+  user_id       Int            
+  state         SurveyState    @default(OPENED)
+  questions     Question[]     
+  passed_survey PassedSurvey[] 
+  user          User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model PassedSurvey {
-id Int @id @default(autoincrement())
-survey Survey @relation(fields: [survey_id], references: [id], onDelete: Cascade)
-survey_id Int
-passed DateTime @default(now())
-user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-user_id Int
-answers Answer[]
+  id        Int      @id @default(autoincrement())
+  survey    Survey   @relation(fields: [survey_id], references: [id], onDelete: Cascade)
+  survey_id Int      
+  passed    DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id   Int      
+  answers   Answer[] 
 }
 
 model Answer {
-id Int @id @default(autoincrement())
-variant AnswerVariant @relation(fields: [variant_id], references: [id], onDelete: Cascade)
-variant_id Int
-passed_survey_id Int
-survey PassedSurvey @relation(fields: [passed_survey_id], references: [id], onDelete: Cascade)
+  id               Int           @id @default(autoincrement())
+  variant          AnswerVariant @relation(fields: [variant_id], references: [id], onDelete: Cascade)
+  variant_id       Int           
+  passed_survey_id Int           
+  survey           PassedSurvey  @relation(fields: [passed_survey_id], references: [id], onDelete: Cascade)
 }
 
 model User {
-id Int @id @default(autoincrement())
-firstname String
-lastname String
-nickname String
-email String
-password String
-role_id Int
-passed_surveys PassedSurvey[]
-surveys Survey[]
-role Role @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  id             Int            @id @default(autoincrement())
+  firstname      String         
+  lastname       String         
+  nickname       String         
+  email          String         
+  password       String         
+  role_id        Int            
+  passed_surveys PassedSurvey[] 
+  surveys        Survey[]       
+  role           Role           @relation(fields: [role_id], references: [id], onDelete: Cascade)
 }
 ```
 
 ## Основний модуль для встановлення зв'язків між репозиторіями та сервісами
-```
+
+```ts
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../services/PrismaService';
 import { SurveyRepository } from '../repositories/SurveyRepository';
@@ -226,10 +229,13 @@ import { PermissionRepository } from '../repositories/PermissionRepository';
     PermissionRepository,
   ],
 })
-export class PrismaModule {}
+export class PrismaModule {
+}
 ```
+
 ## Модуль для встановлення зв'язку між контролером, сервісом, репозиторієм та допоміжними засобами
-```
+
+```ts
 import { Module } from '@nestjs/common';
 import { SurveyService } from '../services/SurveyService';
 import { SurveyController } from '../controllers/SurveyController';
@@ -244,10 +250,13 @@ import { QuestionMapper } from '../mappers/QuestionMapper';
   providers: [SurveyService, SurveyByIdPipe, SurveyMapper, QuestionMapper],
   controllers: [SurveyController],
 })
-export class SurveyModule {}
+export class SurveyModule {
+}
 ```
+
 ## Контролер для роботи з питаннями
-```
+
+```ts
 import {
   Body,
   Controller,
@@ -328,7 +337,8 @@ export class SurveyController {
 ```
 
 ## Сервіс для роботи з питаннями
-```
+
+```ts
 import { Injectable } from '@nestjs/common';
 import { SurveyRepository } from '../repositories/SurveyRepository';
 import { AnswerVariant, Question, Survey } from '@prisma/client';
@@ -440,7 +450,8 @@ export class SurveyService {
 ```
 
 ## Репозиторій для доступу до бази даних
-```
+
+```ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../services/PrismaService';
 import { Prisma } from '@prisma/client';
@@ -480,7 +491,8 @@ export class QuestionRepository {
 ```
 
 ## Виняткові ситуації, що можуть виникнути
-```
+
+```ts
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class AlreadyExistsException extends HttpException {
@@ -489,7 +501,8 @@ export class AlreadyExistsException extends HttpException {
   }
 }
 ```
-```
+
+```ts
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class DoesNotExistException extends HttpException {
@@ -498,7 +511,8 @@ export class DoesNotExistException extends HttpException {
   }
 }
 ```
-```
+
+```ts
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class NotBelongException extends HttpException {
@@ -509,7 +523,8 @@ export class NotBelongException extends HttpException {
 ```
 
 ## Пайп для перевірки питання
-```
+
+```ts
 import { PipeTransform, Injectable } from '@nestjs/common';
 import { QuestionRepository } from '../repositories/QuestionRepository';
 import { DoesNotExistException } from '../exceptions/DoesNotExistException';
@@ -528,7 +543,8 @@ export class QuestionByIdPipe implements PipeTransform {
 ```
 
 ## DTO для валідації даних
-```
+
+```ts
 import {
   IsArray,
   IsNotEmpty,
@@ -549,7 +565,8 @@ export class AddQuestionDTO {
   variants: string[];
 }
 ```
-```
+
+```ts
 import {
   IsArray,
   IsOptional,
